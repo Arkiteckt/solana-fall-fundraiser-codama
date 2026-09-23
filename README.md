@@ -23,7 +23,7 @@ This repo is the fundraiser program from the last assignment, unchanged. The Anc
 
 ## What Codama is
 
-Anchor already gives you an IDL: a JSON description of every instruction, account and type in your program. `@coral-xyz/anchor` reads that IDL at runtime and builds `program.methods.contribute()` for you dynamically. Codama does the same job at build time. It reads the IDL once, turns it into a tree of nodes, and renders real TypeScript files: a decoder per account, a builder per instruction, a finder per PDA. No Anchor dependency, no `any`, and it is the same generator that produces the Metaplex and SPL clients you have imported before.
+Anchor already gives you an IDL: a JSON description of every instruction, account and type in your program. `@coral-xyz/anchor` reads that IDL at runtime and builds `program.methods.contribute()` for you dynamically. Codama does the same job at build time. It reads the IDL once, turns it into a tree of nodes, and renders real TypeScript files: a decoder per account, a builder per instruction, a finder per PDA. No Anchor dependency, no `any`. Codama is the generator behind many modern Solana program clients, including the `@solana-program/*` clients; Metaplex uses closely related IDL-driven tooling (Kinobi, Codama's predecessor) for its Umi clients.
 
 ```
   anchor build ──▶ target/idl/fundraiser.json ──▶ codama run js ──▶ clients/js/src/generated/
@@ -70,9 +70,17 @@ yarn install
 
 | Tool | Version | How to get it |
 | --- | --- | --- |
-| Anchor | 1.1.2 | `avm install 1.1.2 && avm use 1.1.2`. The program pins `anchor-lang` to `=1.1.2`, so the CLI has to match |
-| Solana CLI | 3.1 or newer | [Agave installer](https://docs.anza.xyz/cli/install) |
-| Node | 20 or newer | With `yarn` |
+| Anchor CLI | 1.1.2 | `avm install 1.1.2 && avm use 1.1.2`. The program pins `anchor-lang` to `=1.1.2`, so the CLI has to match |
+| Solana CLI | 3.1.10 | [Agave installer](https://docs.anza.xyz/cli/install). Anchor 1.x targets Solana 3.x and recommends 3.1.10 |
+| Node | 20.18 or newer | With `yarn`. Anchor 1.x tooling requires Node 20.18+ |
+| Surfpool | current | Anchor 1.x `anchor test` boots [Surfpool](https://surfpool.run) instead of `solana-test-validator`. Install it, or pass `anchor test --validator legacy` every time |
+
+```bash
+anchor --version     # anchor-cli 1.1.2
+solana --version     # solana-cli 3.1.10
+node --version       # v20.18 or newer
+surfpool --version   # or plan to use --validator legacy
+```
 
 ### Packages this repo pins
 
@@ -82,7 +90,9 @@ yarn install
 | `@codama/nodes-from-anchor` | 1.5.6 | Reads an Anchor IDL into Codama's node tree |
 | `@codama/renderers-js` | 2.5.0 | Renders the node tree as TypeScript for `@solana/kit` |
 | `@solana/kit` | 8.3.0 | What the generated code imports. `@solana/program-client-core`, which it also imports, comes with it |
-| `@coral-xyz/anchor` | ^0.32.1 | The client you already know; the tests compare against it |
+| `@coral-xyz/anchor` | ^0.32.1 | The Anchor TypeScript client you used last week; the tests compare Codama's output against it. See the note below on the package name |
+
+> **One package name, two eras.** The program is Anchor 1.1.2. The TypeScript client is `@coral-xyz/anchor` 0.32.1, the last release under the old package name; Anchor 1.0 renamed it to `@anchor-lang/core` with the same API and the same IDL format. This repo keeps 0.32.1 to stay identical to the fundraiser assignment you forked last week, so nothing about the Anchor side of the tests is new.
 
 > **Why exact pins.** `renderers-js` minor releases raise the minimum Kit version, and Kit majors change the type of an instruction. The lockfile pairs `renderers-js 2.5.0` with `kit 8.3.0`; that pair is what the answer key was run against. `codama init` would offer to install these for you, but it installs whatever is newest, and newest is not what the tests were written against. `yarn install` first, then `init` has nothing to install.
 
@@ -102,8 +112,10 @@ git add -A && git commit -m "checkpoint 2: codama.json" && git push
 anchor build
 anchor keys sync     # first time only
 anchor build         # yes, again
-anchor test
+anchor test          # or: anchor test --validator legacy
 ```
+
+> **Surfpool.** Anchor 1.x runs `anchor test` against Surfpool by default. If `anchor test` stops before Mocha starts with a message about Surfpool not being found, either install it (see the toolchain table) or add `--validator legacy` to use `solana-test-validator` as before. Pick one and use it for the whole assignment.
 
 > **Build twice, on purpose.** The repo declares a program id whose keypair it does not ship. Your first `anchor build` mints a different one and `anchor keys sync` rewrites `declare_id!` and `Anchor.toml` to match; you did this last time. What is new: the IDL at `target/idl/fundraiser.json` carries the program address too, and Codama copies it straight into the generated client. An IDL built *before* `keys sync` gives you a client that points at a program that does not exist. Rebuild after syncing, every time the id changes.
 
@@ -401,7 +413,10 @@ The generated code imports it; it ships as a dependency of `@solana/kit` at the 
 Pass `info.data` whole. The decoder consumes the 8-byte discriminator itself; slicing it off shifts every field.
 
 **fundraiser.ts tests started failing after I touched codama.ts.**
-Mocha runs files alphabetically, so `codama.ts` runs before `fundraiser.ts` and shares the validator with it. The skeleton keeps all of its setup inside its own `before()` with its own maker and mint so nothing leaks. If you moved setup to the top level or reused the provider wallet as the maker, put it back.
+Every suite in `tests/` has independent setup (its own maker, mint and campaign inside its own `before()`), so file order does not matter and nothing should leak between them. If you moved setup to the top level, reused the provider wallet as the maker, or shared a mint across files, put it back.
+
+**anchor test says it cannot find Surfpool.**
+Anchor 1.x boots Surfpool for `anchor test` by default. Install it from [surfpool.run](https://surfpool.run), or run `anchor test --validator legacy` to use `solana-test-validator` instead.
 
 **ANCHOR_PROVIDER_URL is not defined.**
 Same as last time: run `anchor test`, not `ts-mocha` directly. Or export `ANCHOR_PROVIDER_URL=http://127.0.0.1:8899` and `ANCHOR_WALLET=~/.config/solana/id.json` yourself against a validator you started.
@@ -443,7 +458,7 @@ An input is optional (`?:`) when the IDL gives it a default Codama can compute: 
 
 ### Kit types you will meet
 
-| Kit | web3.js v1 | Convert |
+| Kit | web3.js v1 / `@coral-xyz/anchor` | Convert |
 | --- | --- | --- |
 | `Address` (branded `string`) | `PublicKey` | `address(pk.toBase58())` / `new PublicKey(addr)` |
 | `TransactionSigner` | `Keypair` / wallet | `createNoopSigner(address(...))` when only the address matters |

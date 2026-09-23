@@ -55,7 +55,7 @@ describe("fundraiser", () => {
 
     const tx = await program
     .methods
-    .initialize(new anchor.BN(30000000), 7)   // days; must be at least 1
+    .initialize(new anchor.BN(30000000), 7)   // days
     .accountsPartial({
       maker: maker.publicKey,
       fundraiser,

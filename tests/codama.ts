@@ -46,8 +46,8 @@ describe("codama", () => {
   const program = anchor.workspace.Fundraiser as Program<Fundraiser>;
   const wallet = provider.wallet as NodeWallet;
 
-  // This file runs BEFORE tests/fundraiser.ts (mocha goes alphabetically), so it
-  // sets up its own campaign instead of borrowing that file's state.
+  // Every suite in tests/ sets up its own campaign, so file order does not
+  // matter and nothing here depends on tests/fundraiser.ts having run.
   const maker = anchor.web3.Keypair.generate();
   let mint: anchor.web3.PublicKey;
   let contributorAta: anchor.web3.PublicKey;
@@ -164,7 +164,7 @@ describe("codama", () => {
   // you. Hover the input type: some fields are `?:` optional, some are not.
   // Assert that the ones you left out were filled in with the right addresses.
   //
-  // Then answer in your submission README: which accounts did you still have
+  // Then answer in NOTES.md at the repo root: which accounts did you still have
   // to pass, and why couldn't Codama derive them? (Look at their seeds in
   // programs/fundraiser/src/instructions/contribute.rs, and compare with the
   // same account in initialize.rs.)
