@@ -106,17 +106,16 @@ describe("codama", () => {
   // `program.account.fundraiser.fetch()` gives you. Note the types: Kit hands
   // you base58 strings for pubkeys and `bigint` for u64, not PublicKey / BN.
   it("TODO 1 · decodes the Fundraiser account with the generated decoder", async () => {
-    // assert.strictEqual(FUNDRAISER_PROGRAM_ADDRESS, program.programId.toBase58());
-    //
-    // const info = await provider.connection.getAccountInfo(fundraiser);
-    // const decoded = getFundraiserDecoder().decode(info.data);
-    // const viaAnchor = await program.account.fundraiser.fetch(fundraiser);
-    //
-    // assert.strictEqual(decoded.maker, maker.publicKey.toBase58());
-    // assert.strictEqual(decoded.amountToRaise, BigInt(TARGET));
-    // assert.strictEqual(decoded.currentAmount, BigInt(AMOUNT));
-    // assert.strictEqual(decoded.bump, viaAnchor.bump);
-    assert.fail("TODO 1: generate the client, uncomment the import at the top, then this body");
+    assert.strictEqual(FUNDRAISER_PROGRAM_ADDRESS, program.programId.toBase58());
+    
+    const info = await provider.connection.getAccountInfo(fundraiser);
+    const decoded = getFundraiserDecoder().decode(info!.data);
+    const viaAnchor = await program.account.fundraiser.fetch(fundraiser);
+    
+    assert.strictEqual(decoded.maker, maker.publicKey.toBase58());
+    assert.strictEqual(decoded.amountToRaise, BigInt(TARGET));
+    assert.strictEqual(decoded.currentAmount, BigInt(AMOUNT));
+    assert.strictEqual(decoded.bump, viaAnchor.bump);
   });
 
   // ─── TODO 2 · encode ───────────────────────────────────────────────────────
