@@ -28,13 +28,14 @@ import { toWeb3Instruction } from "./helpers/kit-adapter";
 
 // ─── TODO 1 · import the client you generated ────────────────────────────────
 // Uncomment once `clients/js/src/generated/index.ts` exists.
-//
-// import {
-//   getFundraiserDecoder,
-//   getContributeInstruction,
-//   getContributeInstructionAsync,
-//   FUNDRAISER_PROGRAM_ADDRESS,
-// } from "../clients/js/src/generated";
+
+import {
+  getFundraiserDecoder,
+  getContributeInstruction,
+  getContributeInstructionAsync,
+  FUNDRAISER_PROGRAM_ADDRESS,
+} from "../clients/js/src/generated";
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const TARGET = 30_000_000; // 30 tokens on a 6-decimal mint
