@@ -13,3 +13,24 @@ In `initialize`, the `maker` is passed as its own instruction account, so the fu
 - anchor --version: 1.1.2
 - node --version: v22.23.3
 - npx codama --version: 1.6.3
+
+
+
+
+
+## TODO 3
+Required: fundraiser, vault. Optional: contributorAccount, contributorAta,
+tokenProgram, systemProgram. `contribute` seeds the fundraiser PDA on
+`fundraiser.maker`, a field of the account being derived, so the finder
+would need the account to find the account. `initialize` seeds it on the
+`maker` account, which the caller has, so there it is optional.
+
+## Bonus
+Not attempted.
+
+## One thing that surprised me
+The build worked only with `nightly-2025-06-15`: older nightlies rejected
+`edition2024` crates, newer ones broke Anchor's IDL builder with a
+`{toolchain}` error. The pin that made everything work was in
+`rust-toolchain.toml`, not `RUSTUP_TOOLCHAIN`, because Anchor's IDL step
+ignores the environment variable.
